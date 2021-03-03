@@ -20,6 +20,7 @@ class List
 			temp = temp->next;
 		return temp;
 	}
+
 public:
 	List() { first_element = last_element = nullptr; num_elements = 0; }
 	List(const Item & item);
@@ -31,6 +32,7 @@ public:
 
 	void add(const Item & item);
 	void remove(int index = 0);
+	int find(const Item & item);
 	int get_num_elements() const { return num_elements; }
 };
 
@@ -143,4 +145,17 @@ void List<Item>::remove(int index)
 		exit(EXIT_FAILURE);
 	}
 };
+
+template<typename Item>
+int List<Item>::find(const Item & item)
+{
+	int result_index{ -1 };
+	for (int i{}; i < this->get_num_elements(); ++i)
+		if (this->get_i_element(i)->data == item)
+		{
+			result_index = i;
+			break;
+		}
+	return result_index;
+}
 #endif 

@@ -1,14 +1,22 @@
 #include <iostream>
-#include "list.h"
+#include "task.h"
 
 int main(void)
 {
-	 List<int> list;
-	int y = 1;
-	list.add(y);
-	list.add(2);
-	list.add(3);
-	list.remove();
-	std::cout << list[2] << std::endl;
-	
+	using namespace std;
+	tm date;
+	date.tm_year = 2020;
+	date.tm_mday = 11;
+	date.tm_mon = 03;
+	Task task{"Do some shit", date};
+	task.change_done();
+	task.change_routine();
+	task.add_subtask("Govno");
+	task.add_subtask("Zalupa");
+	task.add_subtask("Gomosek");
+	cout << "Not a list:" << endl;
+	cout << task;
+	Task task2("Zalupa 2");
+	cout << task2;
+	cout << task;
 }
