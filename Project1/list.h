@@ -8,14 +8,14 @@ class List
 	struct List_element
 	{
 		Item data;
-		List_element * next;
+		List_element* next;
 	};
-	List_element * first_element;
-	List_element * last_element;
+	List_element* first_element;
+	List_element* last_element;
 	int num_elements;
-	List_element * get_i_element(int index)
+	List_element* get_i_element(int index)
 	{
-		List_element * temp = first_element;
+		List_element* temp = first_element;
 		for (int i{}; i < index; ++i)
 			temp = temp->next;
 		return temp;
@@ -23,21 +23,21 @@ class List
 
 public:
 	List() { first_element = last_element = nullptr; num_elements = 0; }
-	List(const Item & item);
-	List(const List & list);
+	List(const Item& item);
+	List(const List& list);
 	virtual ~List();
+	Item & operator[] (const int index);
+	const Item& operator[](const int index) const;
+	List & operator=(const List& list);
 
-	const Item & operator[](const int index) const;
-	virtual List & operator=(const List & list);
-
-	void add(const Item & item);
+	void add(const Item& item);
 	void remove(int index = 0);
-	int find(const Item & item);
+	int find(const Item& item);
 	int get_num_elements() const { return num_elements; }
 };
 
 template<typename Item>
-List<Item>::List(const Item & item)
+List<Item>::List(const Item& item)
 {
 	first_element = new List_element;
 	first_element->data = item;
@@ -47,7 +47,7 @@ List<Item>::List(const Item & item)
 }
 
 template<typename Item>
-List<Item>::List(const List & list) : List(list.first_element->data)
+List<Item>::List(const List& list) : List(list.first_element->data)
 {
 	for (int i{ 1 }; i < list.get_num_elements(); ++i)
 		this->add(list[i]);
@@ -56,7 +56,7 @@ List<Item>::List(const List & list) : List(list.first_element->data)
 template<typename Item>
 List<Item>::~List()
 {
-	List_element * temp;
+	List_element* temp;
 	while (first_element != nullptr)
 	{
 		temp = first_element;
@@ -66,7 +66,7 @@ List<Item>::~List()
 }
 
 template<typename Item>
-const Item & List<Item>::operator[](const int index) const
+const Item& List<Item>::operator[](const int index) const
 {
 	try
 	{
@@ -77,7 +77,7 @@ const Item & List<Item>::operator[](const int index) const
 			temp = temp->next;
 		return temp->data;
 	}
-	catch (const char * massange)
+	catch (const char* massange)
 	{
 		std::cout << massange;
 		exit(EXIT_FAILURE);
@@ -85,11 +85,30 @@ const Item & List<Item>::operator[](const int index) const
 }
 
 template<typename Item>
-List<Item> & List<Item>::operator=(const List & list)
+Item& List<Item>::operator[](const int index)
+{
+	try
+	{
+		if (index < 0 || index >= num_elements)
+			throw "ERROR: out of range!\n";
+		List_element* temp = first_element;
+		for (int i{}; i < index; ++i)
+			temp = temp->next;
+		return temp->data;
+	}
+	catch (const char* massange)
+	{
+		std::cout << massange;
+		exit(EXIT_FAILURE);
+	}
+}
+
+template<typename Item>
+List<Item>& List<Item>::operator=(const List& list)
 {
 	if (&list == this)
 		return *this;
-	List_element * temp;
+	List_element* temp;
 	while (first_element != nullptr)
 	{
 		temp = first_element;
@@ -107,7 +126,7 @@ List<Item> & List<Item>::operator=(const List & list)
 }
 
 template<typename Item>
-void List<Item>::add(const Item & item)
+void List<Item>::add(const Item& item)
 {
 	if (first_element == nullptr)
 		*this = List(item);
@@ -129,7 +148,7 @@ void List<Item>::remove(int index)
 	{
 		if (index < 0 || index >= num_elements)
 			throw "ERROR: out of range!\n";
-		List_element * temp = this->get_i_element(index);
+		List_element* temp = this->get_i_element(index);
 		if (index == 0)
 			first_element = first_element->next;
 		else
@@ -139,7 +158,7 @@ void List<Item>::remove(int index)
 		delete temp;
 		--num_elements;
 	}
-	catch (const char * massange)
+	catch (const char* massange)
 	{
 		std::cout << massange;
 		exit(EXIT_FAILURE);
@@ -147,7 +166,7 @@ void List<Item>::remove(int index)
 };
 
 template<typename Item>
-int List<Item>::find(const Item & item)
+int List<Item>::find(const Item& item)
 {
 	int result_index{ -1 };
 	for (int i{}; i < this->get_num_elements(); ++i)
