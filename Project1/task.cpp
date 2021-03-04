@@ -6,8 +6,9 @@ Task::Task()
 	date.tm_year = 0;
 	date.tm_mon = 0;
 	date.tm_yday = 0;
-	isroutine = 0;
-	isdone = 0;
+	isroutine = false;
+	isdone = false;
+	isimportant = false;
 }
 
 Task::Task(const std::string & t)
@@ -16,16 +17,18 @@ Task::Task(const std::string & t)
 	date.tm_year = 0;
 	date.tm_mon = 0;
 	date.tm_yday = 0;
-	isroutine = 0;
-	isdone = 0;
+	isroutine = false;
+	isdone = false;
+	isimportant = false;
 }
 
-Task::Task(const std::string & t, const std::tm & d, bool isr, bool isd)
+Task::Task(const std::string & t, const std::tm & d, bool isr, bool isd, bool isi)
 {
 	title = t;
 	date = d;
 	isroutine = isr;
 	isdone = isd;
+	isdone = isi;
 }
 
 void Task::add_subtask(const List<std::string> & tasks)
@@ -54,9 +57,11 @@ std::ostream & operator<<(std::ostream & os, Task & task)
 		os << " " << task.date.tm_mday << "." << task.date.tm_mon << "." << task.date.tm_year;
 	}
 	if (task.isdone == true)
-		os << " *";
+		os << " c";
 	if (task.isroutine == true)
 		os << " r";
+	if (task.isimportant == true)
+		os << " *";
 	os << std::endl;
 	for (int i{}; i < task.subtasks.get_num_elements(); ++i)
 		os << "  +--" << task.subtasks[i] << std::endl;

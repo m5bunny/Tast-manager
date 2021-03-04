@@ -10,12 +10,13 @@ class Task
 	std::tm date;
 	bool isroutine;
 	bool isdone;
+	bool isimportant;
 	List<std::string> subtasks;
 
 public:
 	Task();
 	Task(const std::string & t);
-	Task(const std::string & t, const std::tm & d, bool isr = false, bool isd = false);
+	Task(const std::string & t, const std::tm & d, bool isr = false, bool isd = false, bool isi = false);
 	~Task() {};
 
 	bool is_done() const { return isdone; } 
@@ -32,7 +33,7 @@ public:
 	bool remove_subtask(const std::string & t);
 
 	friend std::ostream & operator<<(std::ostream & os, Task & task);
-	
+
 };
 
 #endif // !TASK_H_

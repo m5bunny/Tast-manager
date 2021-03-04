@@ -28,7 +28,7 @@ public:
 	virtual ~List();
 
 	const Item & operator[](const int index) const;
-	List & operator=(const List & list);
+	virtual List & operator=(const List & list);
 
 	void add(const Item & item);
 	void remove(int index = 0);

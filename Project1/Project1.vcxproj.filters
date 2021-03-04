@@ -21,6 +21,9 @@
     <ClInclude Include="task.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="todolist.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">

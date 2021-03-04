@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="todolist.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="task.h" />
   </ItemGroup>
