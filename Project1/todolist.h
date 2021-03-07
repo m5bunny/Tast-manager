@@ -16,14 +16,16 @@ public:
 	Task& operator[](const int index) { return List::operator[](index); }
 	ToDoList & operator=(const ToDoList & list) { List::operator=(list); title = list.title; isdefalut = list.isdefalut; return *this; }
 	bool operator==(const std::string & s) const { return (title == s); }
-	bool operator==(const ToDoList & list) const { return (title == list.title); };
+	bool operator==(const ToDoList & list) const { return (title == list.title); }
 
 	void remove(Task & t) { remove(find(t)); }
-	void add(const Task & item) { List::add(item); };
-	void remove(int index = 0) { List::remove(index); };
-	int find(const Task & item) { return List::find(item); };
+	void add(const Task & item) { List::add(item); }
+	void remove(int index = 0) { List::remove(index); }
+	int find(const Task & item) const { return List::find(item); }
 	int get_num_elements() const { return List::get_num_elements(); }
-	void set_title(std::string & t) { title = t; };
+	const std::string & get_title() const { return title; };
+	void set_title(std::string & t) { title = t; }
+	bool is_defalut() const { return isdefalut; }
 
 	friend bool operator==(const std::string & s, const ToDoList & list) { return (list == s); }
 };
@@ -41,11 +43,11 @@ public:
 	const Task * operator[](const int index) const { return List::operator[](index); }
 	TaskCategory & operator=(const TaskCategory& list) { List::operator=(list); title = list.title; return *this; }
 
-	void add(Task * item) { List::add(item); };
-	void remove(int index = 0) { List::remove(index); };
+	void add(Task * item) { List::add(item); }
+	void remove(int index = 0) { List::remove(index); }
 	void remove(Task * t) { remove(find(t)); }
-	int find(Task * item) { return List::find(item); };
+	int find(Task * item) const { return List::find(item); }
 	int get_num_elements() const { return List::get_num_elements(); }
-	void set_title(std::string & t) { title = t; };
+	void set_title(std::string & t) { title = t; }
 };
 #endif

@@ -13,7 +13,7 @@ class List
 	List_element * first_element;
 	List_element * last_element;
 	int num_elements;
-	List_element * get_i_element(int index)
+	List_element * get_i_element(int index) const
 	{
 		List_element * temp = first_element;
 		for (int i{}; i < index; ++i)
@@ -26,13 +26,14 @@ public:
 	List(const Item & item);
 	List(const List & list);
 	virtual ~List();
+
 	Item & operator[] (const int index);
 	const Item & operator[](const int index) const;
 	List & operator=(const List & list);
 
 	void add(const Item & item);
 	void remove(int index = 0);
-	int find(const Item & item);
+	int find(const Item & item) const;
 	int get_num_elements() const { return num_elements; }
 };
 
@@ -169,7 +170,7 @@ void List<Item>::remove(int index)
 };
 
 template<typename Item>
-int List<Item>::find(const Item & item)
+int List<Item>::find(const Item & item) const
 {
 	int result_index{ -1 };
 	for (int i{}; i < this->get_num_elements(); ++i)

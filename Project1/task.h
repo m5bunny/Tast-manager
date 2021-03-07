@@ -30,8 +30,9 @@ public:
 	void change_imporant() { isimportant = (isimportant == true) ? false : true; }
 	void set_date(const std::tm & d) { date = d; }
 	void set_title(const std::string & t) { title = t; };
-	const std::string & get_title() { return title; }
-	const std::tm & get_date() { return date; }
+	const std::string & get_title() const { return title; }
+	const std::tm & get_date() const { return date; }
+	int get_num_elements() const { return subtasks.get_num_elements(); }
 	void add_subtask(const std::string & task) { subtasks.add(task); };
 	void add_subtask(const List<std::string> & tasks);
 	bool remove_subtask(int index) { subtasks.remove(index); };
@@ -40,6 +41,7 @@ public:
 	friend std::ostream & operator<<(std::ostream & os, const Task & task);
 	friend bool operator==(const std::string & s, const Task & task) { return task.operator==(s); }
 	Task & operator=(const Task & task);
+	const std::string & operator[](const int index) const { return subtasks[index]; }
 };
 
 #endif // !TASK_H_
