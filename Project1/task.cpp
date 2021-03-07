@@ -11,18 +11,18 @@ Task::Task()
 	isimportant = false;
 }
 
-Task::Task(const std::string& t)
+Task::Task(const std::string & t, bool isr, bool isd, bool isi)
 {
 	title = t;
 	date.tm_year = 0;
 	date.tm_mon = 0;
 	date.tm_yday = 0;
-	isroutine = false;
-	isdone = false;
-	isimportant = false;
+	isroutine = isr;
+	isdone = isd;
+	isimportant = isi;
 }
 
-Task::Task(const std::string& t, const std::tm& d, bool isr, bool isd, bool isi)
+Task::Task(const std::string & t, const std::tm & d, bool isr, bool isd, bool isi)
 {
 	title = t;
 	date = d;
@@ -31,13 +31,13 @@ Task::Task(const std::string& t, const std::tm& d, bool isr, bool isd, bool isi)
 	isdone = isi;
 }
 
-void Task::add_subtask(const List<std::string>& tasks)
+void Task::add_subtask(const List<std::string> & tasks)
 {
 	for (int i{}; i < tasks.get_num_elements(); ++i)
 		subtasks.add(tasks[i]);
 }
 
-bool Task::remove_subtask(const std::string& t)
+bool Task::remove_subtask(const std::string & t)
 {
 	int index{ subtasks.find(t) };
 	if (index != -1)
@@ -49,17 +49,17 @@ bool Task::remove_subtask(const std::string& t)
 	return false;
 } 
 
-bool Task::operator==(const std::string& s) const
+bool Task::operator==(const std::string & s) const
 {
 	return (title == s);
 }
 
-bool Task::operator==(const Task& task) const
+bool Task::operator==(const Task & task) const
 {
 	return (title == task.title);
 }
 
-std::ostream& operator<<(std::ostream& os, const Task& task)
+std::ostream & operator<<(std::ostream & os, const Task & task)
 {
 	os << "--" << task.title;
 	if (task.date.tm_year != 0)

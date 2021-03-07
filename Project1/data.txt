@@ -1,0 +1,16 @@
+LALL TASKS
+t:
+task one
+tttt2001 20 01:
+sub task one
+,
+second task one
+,
+third task one
+;,
+tast two
+tttf:
+subtask four
+;;
+LCOMPLETED
+f;

@@ -15,7 +15,7 @@ class Task
 
 public:
 	Task();
-	Task(const std::string & t);
+	Task(const std::string & t, bool isr = false, bool isd = false, bool isi = false);
 	Task(const std::string & t, const std::tm & d, bool isr = false, bool isd = false, bool isi = false);
 	~Task() {};
 
@@ -24,8 +24,10 @@ public:
 
 	bool is_done() const { return isdone; } 
 	bool is_routine() const { return isroutine; }
+	bool is_important() const { return isimportant; }
 	void change_done() { isdone = (isdone == true) ? false : true; }
 	void change_routine() { isroutine = (isroutine == true) ? false : true; }
+	void change_imporant() { isimportant = (isimportant == true) ? false : true; }
 	void set_date(const std::tm & d) { date = d; }
 	void set_title(const std::string & t) { title = t; };
 	const std::string & get_title() { return title; }
