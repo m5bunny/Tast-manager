@@ -86,7 +86,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -139,13 +139,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="todolist.h" />
+    <ClInclude Include="task_manager.h" />
+    <ClInclude Include="task_list.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="task.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="task.cpp" />
+    <ClCompile Include="task_manager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

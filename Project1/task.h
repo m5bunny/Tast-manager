@@ -2,6 +2,7 @@
 #define TAKS_H_
 #include <string>
 #include <ctime>
+#include <algorithm>
 #include "list.h"
 
 class Task
@@ -31,6 +32,7 @@ public:
 	void set_date(const std::tm & d) { date = d; }
 	void set_title(const std::string & t) { title = t; };
 	const std::string & get_title() const { return title; }
+	const std::string & get_subtask(const int index) const { return subtasks[index]; }
 	const std::tm & get_date() const { return date; }
 	int get_num_elements() const { return subtasks.get_num_elements(); }
 	void add_subtask(const std::string & task) { subtasks.add(task); };

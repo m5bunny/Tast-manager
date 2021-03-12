@@ -154,10 +154,14 @@ void List<Item>::remove(int index)
 			throw "ERROR: out of range!\n";
 		List_element * temp = this->get_i_element(index);
 		if (index == 0)
+		{
 			first_element = first_element->next;
+			last_element = first_element;
+		}
 		else
 		{
 			this->get_i_element(index - 1)->next = temp->next;
+			last_element = this->get_i_element(index - 1);
 		}
 		delete temp;
 		--num_elements;

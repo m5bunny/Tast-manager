@@ -1,19 +1,4 @@
-LALL TASKS
-t:
-task one
-tttt2001 20 1:
-sub task one
-,
-second task one
-,
-third task one
-;,
-tast two
-tttf:
-subtask four
-;,
-task four
-ffff;
-;
-LCOMPLETEDDDDD
-f;
+LTASKS
+t;
+LCOMPLETED
+t;

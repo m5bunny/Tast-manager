@@ -21,7 +21,10 @@
     <ClInclude Include="task.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="todolist.h">
+    <ClInclude Include="task_list.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="task_manager.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
@@ -30,6 +33,9 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="task.cpp">
+      <Filter>Файлы ресурсов</Filter>
+    </ClCompile>
+    <ClCompile Include="task_manager.cpp">
       <Filter>Файлы ресурсов</Filter>
     </ClCompile>
   </ItemGroup>

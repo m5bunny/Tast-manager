@@ -51,7 +51,9 @@ bool Task::remove_subtask(const std::string & t)
 
 bool Task::operator==(const std::string & s) const
 {
-	return (title == s);
+	std::string temp_title{ title };
+	std::transform(temp_title.begin(), temp_title.end(), temp_title.begin(), ::tolower);
+	return (temp_title == s);
 }
 
 bool Task::operator==(const Task & task) const
@@ -72,9 +74,6 @@ std::ostream & operator<<(std::ostream & os, const Task & task)
 		os << " r";
 	if (task.isimportant == true)
 		os << " *";
-	os << std::endl;
-	for (int i{}; i < task.subtasks.get_num_elements(); ++i)
-		os << "  +--" << task.subtasks[i] << std::endl;
 	return os;
 }
 
