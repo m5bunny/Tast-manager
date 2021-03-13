@@ -1,5 +1,3 @@
-#include <fstream>
-#include <algorithm>
 #include "task_manager.h"
 
 TaskManager::TaskManager(const std::string& t)
@@ -66,7 +64,8 @@ void TaskManager::initialization()
 						if (init_file.get() == 't')
 						{
 							task.change_imporant();
-							category_list[0].add(&task);
+							if (!task.is_done())
+								category_list[0].add(&task);
 						}
 						if (init_file.get() == 't')
 						{
@@ -167,15 +166,18 @@ void TaskManager::save()
 void TaskManager::add_task_to_date_categories(Task & task)
 {
 	std::tm task_date = task.get_date();
-	int yyyymmdd_task_date = task_date.tm_year * 10000 + task_date.tm_mon * 100 + task_date.tm_mday;
-	int yyymmdd_today_date = today_date->tm_year * 10000 + today_date->tm_mon * 100 + today_date->tm_mday;
-	if (yyymmdd_today_date > yyyymmdd_task_date && !(task.is_done()))
-		category_list[3].add(&task);
-	else if (!(task.is_done()))
+	if (task_date.tm_year != 0)
 	{
-		category_list[1].add(&task);
-		if (yyymmdd_today_date == yyyymmdd_task_date)
-			category_list[2].add(&task);
+		int yyyymmdd_task_date = task_date.tm_year * 10000 + task_date.tm_mon * 100 + task_date.tm_mday;
+		int yyymmdd_today_date = today_date->tm_year * 10000 + today_date->tm_mon * 100 + today_date->tm_mday;
+		if (yyymmdd_today_date > yyyymmdd_task_date && !(task.is_done()))
+			category_list[3].add(&task);
+		else if (!(task.is_done()))
+		{
+			category_list[1].add(&task);
+			if (yyymmdd_today_date == yyyymmdd_task_date)
+				category_list[2].add(&task);
+		}
 	}
 }
 
@@ -252,10 +254,6 @@ void TaskManager::add_task(const std::string& t, int i)
 			category_list[0].add(&task);
 		}
 		while (cin.get() != '\n');
-		cout << "Is the task routine(y/n):";
-		if (cin.get() == 'y')
-			task.change_routine();
-		while (cin.get() != '\n');
 		cout << "Enter the date in format yyyy/mm/dd (n - to do not add the date):";
 		if (cin >> year)
 		{
@@ -270,6 +268,9 @@ void TaskManager::add_task(const std::string& t, int i)
 			date.tm_mday = day;
 			task.set_date(date);
 			add_task_to_date_categories(task);
+			cout << "Is the task routine(y/n):";
+			if (cin.get() == 'y')
+				task.change_routine();
 		}
 		else
 		{
@@ -324,9 +325,12 @@ void TaskManager::rename_list(const std::string & t, const std::string & nt)
 void TaskManager::remove_task(const int list_index, const int task_index)
 {
 	Task & task = base_list[list_index][task_index];
-	if (task.is_important())
-		category_list[0].remove(&task);
-	remove_task_from_date_categories(task);
+	if (!task.is_done())
+	{
+		if (task.is_important())
+			category_list[0].remove(&task);
+		remove_task_from_date_categories(task);
+	}
 	base_list[list_index].remove(task_index);
 	show(contex, base_list);
 }
@@ -342,11 +346,11 @@ void TaskManager::rename_list(int index, const std::string & nt)
 		else if (base_list[index].get_title() == nt)
 			throw "The new and the old title are the same!";
 		base_list[index].set_title(nt);
+		show(contex, base_list);
 	}
 	catch (const char * massange)
 	{
-		std::cout << massange;
-		//get_command();
+		std::cout << massange << std::endl;
 	}
 }
 
@@ -418,6 +422,40 @@ void TaskManager::get_command()
 				else
 					cout << "There is not list with this title!\n";
 			}
+			else if (command == "subtask")
+			{
+				if (contex != -1)
+				{
+					std::string sub_title;
+					reed_title(sub_title, false);
+					while (char c = cin.peek() != '\n')
+						if (c != ' ')
+						{
+							reed_command(command);
+							break;
+						}
+					if (command == "to")
+					{
+						reed_title(title, false);
+						index = base_list[contex].find(title);
+					}
+					else
+						cout << "You have to enter \"to\" and title of tasks you want to add subtaks to!\n";
+					if (index != -1)
+					{
+						base_list[contex][index].add_subtask(sub_title);
+						show(contex, base_list);
+					}
+					else
+						cout << "There is not task with this title!\n";
+				}
+				else
+				{
+					while (cin.get() != '\n');
+					cout << "You have to be in list to add the subtasks!\n";
+				}
+					
+			}
 			else
 			{
 				cout << "You have to enter \"list\" if you want to add the list, or \"taks\" if you want to add the task!\n";
@@ -462,10 +500,144 @@ void TaskManager::get_command()
 				else
 					cout << "There is not list with this title!\n";
 			}
+			else if (command == "subtask")
+			{
+				if (contex != -1)
+				{
+					std::string sub_title;
+					reed_title(sub_title, false);
+					while (char c = cin.peek() != '\n')
+						if (c != ' ')
+						{
+							reed_command(command);
+							break;
+						}
+					if (command == "from")
+					{
+						reed_title(title, false);
+						index = base_list[contex].find(title);
+					}
+					else
+						cout << "You have to enter \"from\" and title of tasks you want to remove subtaks from!\n";
+					if (index != -1)
+					{
+						if (base_list[contex][index].remove_subtask(sub_title))
+							show(contex, base_list);
+					}
+					else
+						cout << "There is not task with this title!\n";
+				}
+				else
+				{
+					while (cin.get() != '\n');
+					cout << "You have to be in list to remove the subtasks!\n";
+				}
+			}
 			else
 			{
-				cout << "You have to enter \"list\" if you want to add the list, or \"taks\" if you want to add the task!\n";
+				cout << "You have to enter \"list\" if you want to remove the list, or \"taks\" if you want to remove the task!\n";
 			}
+		}
+		else if (command == "rename")
+		{
+			reed_title(title, true);
+			if ((index = base_list.find(title)) != -1)
+			{
+				if (reed_title(title, true))
+					rename_list(index, title);
+			}
+			else
+			{
+				while (cin.get() != '\n');
+				cout << "There is not list with this title!\n";
+			}
+		}
+		else if (command == "change")
+		{	
+			if (contex != -1)
+			{
+				if (reed_title(title, false))
+				{
+					index = base_list[contex].find(title);
+					if (index != -1)
+					{
+						Task & task = base_list[contex][index];
+						reed_command(command);
+						if (command == "important")
+						{
+							if (task.is_important() && !task.is_done())
+							{
+								category_list[0].remove(&task);
+							}
+							else
+							{
+								category_list[0].add(&task);
+							}
+							task.change_imporant();
+							show(contex, base_list);
+						}
+						else if (command == "complete")
+						{
+							if (!task.is_done())
+							{
+								if (task.is_routine())
+								{
+									base_list[contex].add(task);
+									Task & new_task = base_list[contex][base_list[contex].get_num_elements() - 1];
+									std::tm new_task_date = new_task.get_date();
+									if (new_task_date.tm_mon + 1 <= 12)
+										++new_task_date.tm_mon;
+									else
+									{
+										++new_task_date.tm_year;
+										new_task_date.tm_mon = 1;
+									}
+									new_task.set_date(new_task_date);
+									if (new_task.is_important())
+										category_list[0].add(&new_task);
+									add_task_to_date_categories(new_task);
+								}
+								if (task.is_important())
+									category_list[0].remove(&task);
+								remove_task_from_date_categories(task);
+								task.change_done();
+								base_list[1].add(task);
+								base_list[contex].remove(task);
+								show(contex, base_list);
+							}
+							else
+							{
+								base_list[0].add(task);
+								Task & new_task = base_list[0][base_list[0].get_num_elements() - 1];
+								new_task.change_done();
+								if (new_task.is_important())
+									category_list[0].add(&new_task);
+								add_task_to_date_categories(new_task);
+								base_list[1].remove(task);
+								show(contex, base_list);
+							}
+						}
+						else if (command == "routine")
+						{
+							task.change_routine();
+							show(contex, base_list);
+						}
+						else
+						{
+							while (cin.get() != '\n');
+							cout << "You can change date, important, complete, title and routine!\n";
+						}
+					}
+					else 
+						cout << "There is not task with this title!\n";
+				}
+			}
+			else
+			{
+				while (cin.get() != '\n');
+				cout << "You have to be in list to change the task!\n";
+			}
+
 		}
 		else if (command == "back")
 		{
@@ -480,7 +652,7 @@ void TaskManager::get_command()
 	}
 }
 
-void TaskManager::reed_title(std::string & title, bool islist)
+bool TaskManager::reed_title(std::string & title, bool islist)
 {
 	using std::cout;
 	using std::cin;
@@ -508,11 +680,12 @@ void TaskManager::reed_title(std::string & title, bool islist)
 		}
 		if (islist)
 			std::transform(title.begin(), title.end(), title.begin(), ::toupper);
+		return true;
 	}
 	catch (const char * massange)
 	{
 		cout << massange << endl;
-		return;
+		return false;
 	}
 }
 
@@ -548,8 +721,8 @@ void TaskManager::show(int index, Item & list)
 			}
 		}
 		cout << endl;
-		////if ()
-		contex = index;
+		if (typeid(list) == typeid(List<TaskList>))
+			contex = index;
 	}
 	else
 		show_home();

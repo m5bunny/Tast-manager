@@ -144,7 +144,7 @@ void List<Item>::add(const Item & item)
 	}
 }
 
-
+//place with a lot of problems
 template<typename Item>
 void List<Item>::remove(int index)
 {
@@ -156,12 +156,14 @@ void List<Item>::remove(int index)
 		if (index == 0)
 		{
 			first_element = first_element->next;
-			last_element = first_element;
+			if (get_num_elements() == 1)
+				last_element = first_element;
 		}
 		else
 		{
 			this->get_i_element(index - 1)->next = temp->next;
-			last_element = this->get_i_element(index - 1);
+			if (temp->next == nullptr)
+				last_element = this->get_i_element(index - 1);
 		}
 		delete temp;
 		--num_elements;
@@ -177,6 +179,7 @@ template<typename Item>
 int List<Item>::find(const Item & item) const
 {
 	int result_index{ -1 };
+
 	for (int i{}; i < this->get_num_elements(); ++i)
 		if (this->get_i_element(i)->data == item)
 		{

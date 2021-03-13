@@ -45,7 +45,7 @@ bool Task::remove_subtask(const std::string & t)
 		subtasks.remove(index);
 		return true;
 	}
-	std::cout << "There is no such a subtask!\n";
+	std::cout << "There is no such a subtask in " << this->get_title() << "!\n";
 	return false;
 } 
 
@@ -58,7 +58,9 @@ bool Task::operator==(const std::string & s) const
 
 bool Task::operator==(const Task & task) const
 {
-	return (title == task.title);
+	std::string temp_title{ title };
+	std::transform(temp_title.begin(), temp_title.end(), temp_title.begin(), ::tolower);
+	return (temp_title == task.title);
 }
 
 std::ostream & operator<<(std::ostream & os, const Task & task)

@@ -1,5 +1,8 @@
 #ifndef TASK_MANAGER_H_
 #define TASK_MANAGER_H_
+#include <typeinfo>
+#include <fstream>
+#include <algorithm>
 #include "task_list.h"
 
 class TaskManager 
@@ -11,7 +14,7 @@ class TaskManager
 	std::tm * today_date;
 	void initialization();
 	void save();
-	void reed_title(std::string & title, bool islist);
+	bool reed_title(std::string & title, bool islist);
 	void add_task_to_date_categories(Task & task);
 	void remove_task_from_date_categories(Task& task);
 	bool reed_command(std::string & command);
