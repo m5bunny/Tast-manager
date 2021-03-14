@@ -32,6 +32,8 @@ public:
 	//void remove_list(const std::string & t);
 	void remove_list(const int index);
 	void remove_task(const int list_index, const int task_index);
+	void move_task(const std::string& t, int f_index, int t_index);
+	void help();
 
 	//void rename_list(const std::string & t, const std::string & nt);
 	void rename_list(const int index, const std::string & nt);

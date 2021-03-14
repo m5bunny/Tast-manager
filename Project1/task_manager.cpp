@@ -163,6 +163,43 @@ void TaskManager::save()
 	save_file.close();
 }
 
+void TaskManager::help()
+{
+	system("cls");
+	using std::cout;
+	using std::endl;
+	cout << "List of commands:\n\n"
+		 << "'back' - go to the home screen;\n\n"
+		 << "'show' \"list title\" - show the list with title \"list title\";\n\n"
+		 << "'add':\n"
+		 << " -'list' \"list title\" - add the list with title \"list title\";\n"
+		 << " -'task' \"task title\" ('to' \"list title\") - add the task with title\n"
+		 << "  \"task title\";\n"
+		 << " -to \"TASKS\"(\"list title\");\n"
+		 << " -'subtask' \"subtask title\" 'to' \"task title\" - add the subtask with title\n"
+		 << "  \"subtask title\" to the task with title \"task title\";\n\n"
+		 << "'remove':\n"
+		 << " -'list' \"list title\" - remove the list with title \"list title\";\n"
+		 << " -'task' \"task title\" ('from' \"list title\") - remove the task with title\n"
+		 << "   \"task title\";\n"
+		 << "  from \"TASKS\"(\"list title\");\n"
+		 << " -'subtask' \"subtask title\" 'from' \"task title\" - remove the subtask with title\n"
+		 << "  \"subtask title\" from the task with title \"task title\";\n\n"
+		 << "'rename' \"list title\" \"new list title\" - change the title of list from\n"
+		 << "\"list title\" to \"new list title\";\n\n"
+		 << "'change' \"task title\":\n"
+		 << " -'important' - set/unset important status to the task with the title\n"
+		 << "  \"task title\";\n"
+		 << " -'complete' - set/unset complete status to the task with the title\n"
+		 << "  \"task title\";\n"
+		 << " -'routine' - set/unset routine status to the task with the title \"task title\";\n"
+		 << " -'title' \"new task tile\" - change the task title from \"task title\" to\n"
+		 << "  \"new task title\";\n"
+		 << " -'date' ('off') - set(unset) date to the task with the title \"task title\";\n\n"
+		 << "'move' \"taks title\" ('from' \"from list title\") 'to' \"to list title\" - move task\n"
+		 << "with title \"task title\" from context list(list with title \"from list title\") to list with title \"to list title\";\n\n";
+} 
+
 void TaskManager::add_task_to_date_categories(Task & task)
 {
 	std::tm task_date = task.get_date();
@@ -335,6 +372,29 @@ void TaskManager::remove_task(const int list_index, const int task_index)
 	show(contex, base_list);
 }
 
+void TaskManager::move_task(const std::string & t, int f_index, int t_index)
+{
+	if (f_index != 1 && t_index != 1)
+	{
+		int task_index = base_list[f_index].find(t);
+		if (task_index != -1)
+		{
+			base_list[t_index].add(base_list[f_index][task_index]);
+			Task & new_task = base_list[t_index][base_list[t_index].get_num_elements() - 1];
+			if (new_task.is_important())
+				category_list[0].add(&new_task);
+			add_task_to_date_categories(new_task);
+			remove_task(f_index, task_index);
+		}
+		else
+			std::cout << "There is not task with this title in " << base_list[f_index].get_title() << "!" << std::endl;
+	}
+	else
+	{
+		std::cout << "You can not move tasks from or to the COMPLETED list!\n";
+	}
+}
+
 void TaskManager::rename_list(int index, const std::string & nt)
 {
 	try
@@ -384,14 +444,15 @@ void TaskManager::get_command()
 		std::transform(command.begin(), command.end(), command.begin(), ::tolower);
 		if (command == "show")
 		{
-			reed_title(title, true);
-			if ((index = category_list.find(title)) != -1)
-				show(index, category_list);
-			else if ((index = base_list.find(title)) != -1)
-				show(index, base_list);
-			else
-				cout << "There is not list with this title!\n";
-
+			if (reed_title(title, true))
+			{
+				if ((index = category_list.find(title)) != -1)
+					show(index, category_list);
+				else if ((index = base_list.find(title)) != -1)
+					show(index, base_list);
+				else
+					cout << "There is not list with this title!\n";
+			}
 		}
 		else if (command == "add")
 		{
@@ -619,8 +680,78 @@ void TaskManager::get_command()
 						}
 						else if (command == "routine")
 						{
-							task.change_routine();
-							show(contex, base_list);
+							if (task.get_date().tm_year != 0)
+							{
+								task.change_routine();
+								show(contex, base_list);
+							}
+							else
+								cout << "You can not set routine to task without date!\n";
+						}
+						else if (command == "title")
+						{
+							if (reed_title(title, false))
+							{
+								task.set_title(title);
+								show(contex, base_list);
+							}
+						}
+						else if (command == "date")
+						{
+							char c;
+							int year, month, day;
+							while ((c = cin.peek()) != '\n')
+							{
+								if (c != ' ')
+								{
+									reed_command(command);
+									break;
+								}
+								else 
+									cin.get();
+							}
+							if (command == "off")
+							{
+								if (task.get_date().tm_year != 0)
+								{
+									remove_task_from_date_categories(task);
+									std::tm date;
+									date.tm_year = 0;
+									date.tm_mon = 0;
+									date.tm_mday = 0;
+									task.set_date(date);
+									if (task.is_routine())
+										task.change_routine();
+									show(contex, base_list);
+								}
+								else
+									cout << "This task is already without date!\n";
+							}
+							else
+							{
+								cout << "Enter the date in format yyyy/mm/dd:";
+								if (cin >> year)
+								{
+									cin.get();
+									cin >> month;
+									cin.get();
+									cin >> day;
+									while (cin.get() != '\n');
+									std::tm date;
+									date.tm_year = year;
+									date.tm_mon = month;
+									date.tm_mday = day;
+									task.set_date(date);
+									add_task_to_date_categories(task);
+									show(contex, base_list);
+								}
+								else
+								{
+									cout << "You have to enter date like YYYY/MM/DD!\n";
+									cin.clear();
+									cin.ignore(256, '\n');
+								}
+							}
 						}
 						else
 						{
@@ -638,6 +769,66 @@ void TaskManager::get_command()
 				cout << "You have to be in list to change the task!\n";
 			}
 
+		}
+		else if (command == "move")
+		{
+			std::string task_title;
+			reed_title(task_title, false);
+		 	int from_index = (contex == -1) ? 0 : contex;
+			int to_index;
+			while (char c = cin.peek() != '\n')
+				if (c != ' ')
+				{
+					reed_command(command);
+					break;
+				}
+			if (command == "from")
+			{
+				reed_title(title, true);
+				from_index = base_list.find(title);
+				reed_command(command);
+				if (command == "to")
+				{
+					reed_title(title, true);
+					to_index = base_list.find(title);
+					if (from_index != to_index)
+					{
+						std::transform(task_title.begin(), task_title.end(), task_title.begin(), ::tolower);
+						if (from_index != -1 && to_index != -1)
+							move_task(task_title, from_index, to_index);
+						else
+							cout << "There is not list with this title!\n";
+					}
+					else
+						cout << "The from list and the to list are the same!\n";
+				}
+				else
+					cout << "You have to enter \"to\" and the title of the list to move the task!\n";
+			}
+			else if (command == "to")
+			{
+				reed_title(title, true);
+				to_index = base_list.find(title);
+				if (from_index != to_index)
+				{
+					std::transform(task_title.begin(), task_title.end(), task_title.begin(), ::tolower);
+					if (from_index != -1 && to_index != -1)
+						move_task(task_title, from_index, to_index);
+					else
+						cout << "There is not list with this title!\n";
+				}
+				else
+					cout << "The from list and the to list are the same!\n";
+			}
+			else
+			{
+				while (cin.get() != '\n');
+				cout << "You have to enter \"to\" and the title of the list to move the task!\n";
+			}
+		}
+		else if (command == "help")
+		{
+			help();
 		}
 		else if (command == "back")
 		{
