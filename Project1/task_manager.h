@@ -12,34 +12,28 @@ class TaskManager
 	List<TaskCategory> category_list;
 	int contex;
 	std::tm * today_date;
+
 	void initialization();
 	void save();
 	bool reed_title(std::string & title, bool islist);
+	bool reed_command(std::string & command);
 	void add_task_to_date_categories(Task & task);
 	void remove_task_from_date_categories(Task& task);
-	bool reed_command(std::string & command);
+	void show_home();
+	template<typename Item>
+	void show(int index, Item & list);
+	void add_list(const std::string & t);
+	void add_task(const std::string & t, int i);
+	void rename_list(const int index, const std::string & nt);
+	void remove_list(const int index);
+	void remove_task(const int list_index, const int task_index);
+	void move_task(const std::string & t, int f_index, int t_index);
+	void help();
 public:
 	TaskManager(const std::string & t);
 	~TaskManager();
 
-	void show_home();
-	template<typename Item>
-	void show(int index, Item & list);
 	void get_command();
-
-	void add_list(const std::string & t);
-	void add_task(const std::string & t, int i);
-	//void remove_list(const std::string & t);
-	void remove_list(const int index);
-	void remove_task(const int list_index, const int task_index);
-	void move_task(const std::string& t, int f_index, int t_index);
-	void help();
-
-	//void rename_list(const std::string & t, const std::string & nt);
-	void rename_list(const int index, const std::string & nt);
-	//void add_task(const int index, const Task & task);
-	//void remove_task(const int list_index, const int task_index);
-	//void rename_task(const int list_index, const int task_index, const Task & task);
 };
 
 #endif // !TASK_MANAGER_H_

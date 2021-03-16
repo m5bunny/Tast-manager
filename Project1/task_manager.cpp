@@ -1,6 +1,6 @@
 #include "task_manager.h"
 
-TaskManager::TaskManager(const std::string& t)
+TaskManager::TaskManager(const std::string & t)
 {
 	category_list.add(TaskCategory{ "IMPORTANT" });
 	category_list.add(TaskCategory{ "PLANNED" });
@@ -163,42 +163,52 @@ void TaskManager::save()
 	save_file.close();
 }
 
-void TaskManager::help()
+bool TaskManager::reed_title(std::string & title, bool islist)
 {
-	system("cls");
 	using std::cout;
+	using std::cin;
 	using std::endl;
-	cout << "List of commands:\n\n"
-		 << "'back' - go to the home screen;\n\n"
-		 << "'show' \"list title\" - show the list with title \"list title\";\n\n"
-		 << "'add':\n"
-		 << " -'list' \"list title\" - add the list with title \"list title\";\n"
-		 << " -'task' \"task title\" ('to' \"list title\") - add the task with title\n"
-		 << "  \"task title\";\n"
-		 << " -to \"TASKS\"(\"list title\");\n"
-		 << " -'subtask' \"subtask title\" 'to' \"task title\" - add the subtask with title\n"
-		 << "  \"subtask title\" to the task with title \"task title\";\n\n"
-		 << "'remove':\n"
-		 << " -'list' \"list title\" - remove the list with title \"list title\";\n"
-		 << " -'task' \"task title\" ('from' \"list title\") - remove the task with title\n"
-		 << "   \"task title\";\n"
-		 << "  from \"TASKS\"(\"list title\");\n"
-		 << " -'subtask' \"subtask title\" 'from' \"task title\" - remove the subtask with title\n"
-		 << "  \"subtask title\" from the task with title \"task title\";\n\n"
-		 << "'rename' \"list title\" \"new list title\" - change the title of list from\n"
-		 << "\"list title\" to \"new list title\";\n\n"
-		 << "'change' \"task title\":\n"
-		 << " -'important' - set/unset important status to the task with the title\n"
-		 << "  \"task title\";\n"
-		 << " -'complete' - set/unset complete status to the task with the title\n"
-		 << "  \"task title\";\n"
-		 << " -'routine' - set/unset routine status to the task with the title \"task title\";\n"
-		 << " -'title' \"new task tile\" - change the task title from \"task title\" to\n"
-		 << "  \"new task title\";\n"
-		 << " -'date' ('off') - set(unset) date to the task with the title \"task title\";\n\n"
-		 << "'move' \"taks title\" ('from' \"from list title\") 'to' \"to list title\" - move task\n"
-		 << "with title \"task title\" from context list(list with title \"from list title\") to list with title \"to list title\";\n\n";
-} 
+	title = "";
+	try
+	{
+		char read_char;
+		while ((read_char = cin.get()) != '\n')
+			if (read_char == '"')
+				break;
+		if (read_char == '\n')
+		{
+			throw "You have to enter title of list/task (\"List/task title\")!";
+		}
+		while ((read_char = cin.get()) != '\n')
+		{
+			if (read_char == '"')
+				break;
+			title += read_char;
+		}
+		if (read_char == '\n')
+		{
+			throw "You have to enter title of list/task (\"List/task title\")!";
+		}
+		if (islist)
+			std::transform(title.begin(), title.end(), title.begin(), ::toupper);
+		return true;
+	}
+	catch (const char * massange)
+	{
+		cout << massange << endl;
+		return false;
+	}
+}
+
+bool TaskManager::reed_command(std::string & command)
+{
+	if (std::cin >> command)
+	{
+		std::transform(command.begin(), command.end(), command.begin(), ::tolower);
+		return true;
+	}
+	return false;
+}
 
 void TaskManager::add_task_to_date_categories(Task & task)
 {
@@ -236,6 +246,50 @@ void TaskManager::remove_task_from_date_categories(Task & task)
 	}
 }
 
+void TaskManager::show_home()
+{
+	system("cls");
+	contex = -1;
+	using std::cout;
+	using std::endl;
+	cout << "Categories:" << endl;
+	for (int i{}; i < category_list.get_num_elements(); ++i)
+		cout << category_list[i] << endl;
+	cout << endl << "Lists: " << endl;
+	for (int i{}; i < base_list.get_num_elements(); ++i)
+		cout << base_list[i] << endl;
+	cout << endl;
+}
+
+template<typename Item>
+void TaskManager::show(int index, Item & list)
+{
+	if (index != -1)
+	{
+		system("cls");
+		using std::cout;
+		using std::endl;
+		cout << list[index] << ":" << endl;
+		for (int i{}; i < list[index].get_num_elements(); ++i)
+		{
+			cout << "+" << list[index][i] << endl;
+			for (int j{}; j < list[index][i].get_num_elements(); ++j)
+			{
+				if (i != list[index].get_num_elements() - 1)
+					cout << "+";
+				else
+					cout << " ";
+				cout << "  +--" << list[index][i][j] << endl;
+			}
+		}
+		cout << endl;
+		if (typeid(list) == typeid(List<TaskList>))
+			contex = index;
+	}
+	else
+		show_home();
+}
+
 void TaskManager::add_list(const std::string & t)
 {
 	try 
@@ -251,30 +305,8 @@ void TaskManager::add_list(const std::string & t)
 	}
 	show(contex, base_list);
 }
-/*
-void TaskManager::remove_list(const std::string & t)
-{
-	try
-	{
-		int index;
-		if ((index = base_list.find(t)) == -1)
-			throw "There is no any list with this title!";
-		else if (base_list[index].is_defalut())
-			throw "You can not remove the default list!";
-		base_list.remove(index);
-	}
-	catch (const char * massange)
-	{
-		std::cout << massange;
-		communicator();
-	}
-}
 
-if (index > 0 && index <= 2)
-			throw "You can not remove the default list!";
-*/
-
-void TaskManager::add_task(const std::string& t, int i)
+void TaskManager::add_task(const std::string & t, int i)
 {
 	using std::cout;
 	using std::cin;
@@ -322,6 +354,25 @@ void TaskManager::add_task(const std::string& t, int i)
 	}
 }
 
+void TaskManager::rename_list(int index, const std::string & nt)
+{
+	try
+	{
+		if (index < 0 || index >= base_list.get_num_elements())
+			throw "You entered a wrong number!";
+		else if (base_list[index].is_defalut())
+			throw "You can not rename the default list!";
+		else if (base_list[index].get_title() == nt)
+			throw "The new and the old title are the same!";
+		base_list[index].set_title(nt);
+		show(contex, base_list);
+	}
+	catch (const char * massange)
+	{
+		std::cout << massange << std::endl;
+	}
+}
+
 void TaskManager::remove_list(const int index)
 {
 	try
@@ -338,26 +389,6 @@ void TaskManager::remove_list(const int index)
 		std::cout << massange << std::endl;
 	}
 }
-/*
-void TaskManager::rename_list(const std::string & t, const std::string & nt)
-{
-	try
-	{
-		int index;
-		if ((index = base_list.find(t)) == -1)
-			throw "There is no any list with this title!";
-		else if (base_list[index].is_defalut())
-			throw "You can not rename the default list!";
-		if (t == nt)
-			throw "The new and the old title are the same!";
-		base_list[index].set_title(nt);
-	}
-	catch (const char * massange)
-	{
-		std::cout << massange;
-		communicator();
-	}
-}*/
 
 void TaskManager::remove_task(const int list_index, const int task_index)
 {
@@ -395,39 +426,41 @@ void TaskManager::move_task(const std::string & t, int f_index, int t_index)
 	}
 }
 
-void TaskManager::rename_list(int index, const std::string & nt)
-{
-	try
-	{
-		if (index < 0 || index >= base_list.get_num_elements())
-			throw "You entered a wrong number!";
-		else if (base_list[index].is_defalut())
-			throw "You can not rename the default list!";
-		else if (base_list[index].get_title() == nt)
-			throw "The new and the old title are the same!";
-		base_list[index].set_title(nt);
-		show(contex, base_list);
-	}
-	catch (const char * massange)
-	{
-		std::cout << massange << std::endl;
-	}
-}
-
-void TaskManager::show_home()
+void TaskManager::help()
 {
 	system("cls");
-	contex = -1;
 	using std::cout;
 	using std::endl;
-	cout << "Categories:" << endl;
-	for (int i{}; i < category_list.get_num_elements(); ++i)
-		cout << category_list[i] << endl;
-	cout << endl << "Lists: " << endl;
-	for (int i{}; i < base_list.get_num_elements(); ++i)
-		cout << base_list[i] << endl;
-	cout << endl;
-}
+	cout << "List of commands:\n\n"
+		 << "'back' - go to the home screen;\n\n"
+		 << "'show' \"list title\" - show the list with title \"list title\";\n\n"
+		 << "'add':\n"
+		 << " -'list' \"list title\" - add the list with title \"list title\";\n"
+		 << " -'task' \"task title\" ('to' \"list title\") - add the task with title\n"
+		 << "  \"task title\" to \"TASKS\"(\"list title\");\n"
+		 << " -'subtask' \"subtask title\" 'to' \"task title\" - add the subtask with title\n"
+		 << "  \"subtask title\" to the task with title \"task title\";\n\n"
+		 << "'remove':\n"
+		 << " -'list' \"list title\" - remove the list with title \"list title\";\n"
+		 << " -'task' \"task title\" ('from' \"list title\") - remove the task with title\n"
+		 << "   \"task title\";\n"
+		 << "  from \"TASKS\"(\"list title\");\n"
+		 << " -'subtask' \"subtask title\" 'from' \"task title\" - remove the subtask with title\n"
+		 << "  \"subtask title\" from the task with title \"task title\";\n\n"
+		 << "'rename' \"list title\" \"new list title\" - change the title of list from\n"
+		 << "\"list title\" to \"new list title\";\n\n"
+		 << "'change' \"task title\":\n"
+		 << " -'important' - set/unset important status to the task with the title\n"
+		 << "  \"task title\";\n"
+		 << " -'complete' - set/unset complete status to the task with the title\n"
+		 << "  \"task title\";\n"
+		 << " -'routine' - set/unset routine status to the task with the title \"task title\";\n"
+		 << " -'title' \"new task tile\" - change the task title from \"task title\" to\n"
+		 << "  \"new task title\";\n"
+		 << " -'date' ('off') - set(unset) date to the task with the title \"task title\";\n\n"
+		 << "'move' \"taks title\" ('from' \"from list title\") 'to' \"to list title\" - move task\n"
+		 << "with title \"task title\" from context list(list with title \"from list title\") to list with title \"to list title\";\n\n";
+} 
 
 void TaskManager::get_command()
 {
@@ -498,6 +531,7 @@ void TaskManager::get_command()
 					if (command == "to")
 					{
 						reed_title(title, false);
+						std::transform(title.begin(), title.end(), title.begin(), ::tolower);
 						index = base_list[contex].find(title);
 					}
 					else
@@ -576,6 +610,7 @@ void TaskManager::get_command()
 					if (command == "from")
 					{
 						reed_title(title, false);
+						std::transform(title.begin(), title.end(), title.begin(), ::tolower);
 						index = base_list[contex].find(title);
 					}
 					else
@@ -759,8 +794,12 @@ void TaskManager::get_command()
 							cout << "You can change date, important, complete, title and routine!\n";
 						}
 					}
-					else 
+					else
+					{
+						while (cin.get() != '\n');
 						cout << "There is not task with this title!\n";
+					}
+						
 				}
 			}
 			else
@@ -841,80 +880,4 @@ void TaskManager::get_command()
 		}
 		cout << ":";
 	}
-}
-
-bool TaskManager::reed_title(std::string & title, bool islist)
-{
-	using std::cout;
-	using std::cin;
-	using std::endl;
-	title = "";
-	try
-	{
-		char read_char;
-		while ((read_char = cin.get()) != '\n')
-			if (read_char == '"')
-				break;
-		if (read_char == '\n')
-		{
-			throw "You have to enter title of list/task (\"List/task title\")!";
-		}
-		while ((read_char = cin.get()) != '\n')
-		{
-			if (read_char == '"')
-				break;
-			title += read_char;
-		}
-		if (read_char == '\n')
-		{
-			throw "You have to enter title of list/task (\"List/task title\")!";
-		}
-		if (islist)
-			std::transform(title.begin(), title.end(), title.begin(), ::toupper);
-		return true;
-	}
-	catch (const char * massange)
-	{
-		cout << massange << endl;
-		return false;
-	}
-}
-
-bool TaskManager::reed_command(std::string & command)
-{
-	if (std::cin >> command)
-	{
-		std::transform(command.begin(), command.end(), command.begin(), ::tolower);
-		return true;
-	}
-	return false;
-}
-
-template<typename Item>
-void TaskManager::show(int index, Item & list)
-{
-	if (index != -1)
-	{
-		system("cls");
-		using std::cout;
-		using std::endl;
-		cout << list[index] << ":" << endl;
-		for (int i{}; i < list[index].get_num_elements(); ++i)
-		{
-			cout << "+" << list[index][i] << endl;
-			for (int j{}; j < list[index][i].get_num_elements(); ++j)
-			{
-				if (i != list[index].get_num_elements() - 1)
-					cout << "+";
-				else
-					cout << " ";
-				cout << "  +--" << list[index][i][j] << endl;
-			}
-		}
-		cout << endl;
-		if (typeid(list) == typeid(List<TaskList>))
-			contex = index;
-	}
-	else
-		show_home();
 }
