@@ -25,11 +25,13 @@ public:
 	List() { first_element = last_element = nullptr; num_elements = 0; }
 	List(const Item & item);
 	List(const List & list);
+	List(List && list);
 	virtual ~List();
 
 	Item & operator[] (const int index);
 	const Item & operator[](const int index) const;
 	List & operator=(const List & list);
+	List & operator=(List && list);
 
 	void add(const Item & item);
 	void remove(int index = 0);
@@ -45,6 +47,16 @@ List<Item>::List(const Item & item)
 	first_element->next = nullptr;
 	last_element = first_element;
 	num_elements = 1;
+}
+
+template<typename Item>
+List<Item>::List(List && list)
+{
+	first_element = list.first_element;
+	last_element = list.last_element;
+	num_elements = list.num_elements;
+	list.first_element = list.last_element = nullptr;
+	list.num_elements = 0;
 }
 
 template<typename Item>
@@ -126,6 +138,26 @@ List<Item> & List<Item>::operator=(const List & list)
 		for (int i{ 1 }; i < list.get_num_elements(); ++i)
 			this->add(list[i]);
 	}
+	return *this;
+}
+
+template<typename Item>
+List<Item> & List<Item>::operator=(List && list)
+{
+	if (&list == this)
+		return *this;
+	List_element* temp;
+	while (first_element != nullptr)
+	{
+		temp = first_element;
+		first_element = first_element->next;
+		delete temp;
+	}
+	first_element = list.first_element;
+	last_element = list.last_element;
+	num_elements = list.num_elements;
+	list.first_element = list.last_element = nullptr;
+	list.num_elements = 0;
 	return *this;
 }
 

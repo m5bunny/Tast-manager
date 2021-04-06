@@ -381,6 +381,14 @@ void TaskManager::remove_list(const int index)
 			throw "You entered a wrong number!";
 		else if (base_list[index].is_defalut())
 			throw "You can not remove the default list!";
+		int num_elements = base_list[index].get_num_elements();
+		if (num_elements > 0)
+		{
+			for (int i{}; i < num_elements; ++i)
+			{
+				remove_task(index, i);
+			}
+		}
 		base_list.remove(index);
 		show(contex, base_list);
 	}
