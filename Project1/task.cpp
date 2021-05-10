@@ -90,3 +90,35 @@ Task & Task::operator=(const Task & task)
 		subtasks = task.subtasks;
 	return *this;
 }
+
+void Task::save(std::stringstream & sf)
+{
+	sf << title << std::endl;
+	if (isroutine)
+		sf << 't';
+	else
+		sf << 'f';
+	if (isdone)
+		sf << 't';
+	else
+		sf << 'f';
+	if (isimportant)
+		sf << 't';
+	else
+		sf << 'f';
+	if (date.tm_year != 0)
+		sf << 't' << date.tm_year << " " << date.tm_mon << " " << date.tm_mday;
+	else
+		sf << 'f';
+	if (subtasks.get_num_elements() != 0)
+	{
+		sf << ':' << std::endl;
+		for (int i{}; i < subtasks.get_num_elements(); ++i)
+		{
+			sf << subtasks[i] << std::endl;
+			if (i < subtasks.get_num_elements() - 1)
+				sf << "," << std::endl;
+		}
+	}
+	sf << ';';
+}

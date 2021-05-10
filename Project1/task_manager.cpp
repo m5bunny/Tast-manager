@@ -46,7 +46,6 @@ void TaskManager::initialization()
 				base_list.add(TaskList{ t, isd });
 				if (init_file.get() == ';')
 				{
-
 					continue;
 				}
 				else
@@ -65,7 +64,7 @@ void TaskManager::initialization()
 						{
 							task.change_imporant();
 							if (!task.is_done())
-								category_list[0].add(&task);
+								category_list[IMPORTANT].add(&task);
 						}
 						if (init_file.get() == 't')
 						{
@@ -102,62 +101,22 @@ void TaskManager::initialization()
 void TaskManager::save()
 {
 	std::ofstream save_file;
+	std::stringstream ss;
 	save_file.open(data_file_title);
+	iSave * ptr;
+	char c;
 	if (save_file)
 	{
 		for (int i{}; i < base_list.get_num_elements(); ++i)
 		{
-			save_file << 'L' << base_list[i].get_title() << std::endl;
-			if (base_list[i].is_defalut())
-				save_file << 't';
-			else
-				save_file << 'f';
-			if (base_list[i].get_num_elements() == 0)
-				save_file << ";" << std::endl;
-			else
-			{
-				save_file << ":" << std::endl;
-				for (int j{}; j < base_list[i].get_num_elements(); ++j)
-				{
-					save_file << base_list[i][j].get_title() << std::endl;
-					if (base_list[i][j].is_routine())
-						save_file << 't';
-					else
-						save_file << 'f';
-					if (base_list[i][j].is_done())
-						save_file << 't';
-					else
-						save_file << 'f';
-					if (base_list[i][j].is_important())
-						save_file << 't';
-					else
-						save_file << 'f';
-					std::tm date = base_list[i][j].get_date();
-					if (date.tm_year != 0)
-						save_file << 't' << date.tm_year << " " << date.tm_mon << " " << date.tm_mday;
-					else
-						save_file << 'f';
-					if (base_list[i][j].get_num_elements() == 0)
-					{
-						save_file << ';';
-						if (j < base_list[i].get_num_elements() - 1)
-							save_file << "," << std::endl;
-					}
-					else
-					{
-						save_file << ':' << std::endl;
-						for (int k{}; k < base_list[i][j].get_num_elements(); ++k)
-						{
-							save_file << base_list[i][j][k] << std::endl;
-							if (k < base_list[i][j].get_num_elements() - 1)
-								save_file << "," << std::endl;
-						}
-						if (j < base_list[i].get_num_elements() - 1)
-							save_file << ";," << std::endl;
-					}
-				}
-				save_file << ";" << std::endl;
-			}
+			ptr = &base_list[i];
+			ptr->save(ss);
+			ss << ";\n";
+		}
+		ss << '\0';
+		while (c = ss.get())
+		{
+			save_file << c;
 		}
 	}
 	save_file.close();
@@ -218,12 +177,12 @@ void TaskManager::add_task_to_date_categories(Task & task)
 		int yyyymmdd_task_date = task_date.tm_year * 10000 + task_date.tm_mon * 100 + task_date.tm_mday;
 		int yyymmdd_today_date = today_date->tm_year * 10000 + today_date->tm_mon * 100 + today_date->tm_mday;
 		if (yyymmdd_today_date > yyyymmdd_task_date && !(task.is_done()))
-			category_list[3].add(&task);
+			category_list[OVERDUE].add(&task);
 		else if (!(task.is_done()))
 		{
-			category_list[1].add(&task);
+			category_list[PLANNED].add(&task);
 			if (yyymmdd_today_date == yyyymmdd_task_date)
-				category_list[2].add(&task);
+				category_list[TODAY].add(&task);
 		}
 	}
 }
@@ -236,12 +195,12 @@ void TaskManager::remove_task_from_date_categories(Task & task)
 		int yyyymmdd_task_date = task_date.tm_year * 10000 + task_date.tm_mon * 100 + task_date.tm_mday;
 		int yyymmdd_today_date = today_date->tm_year * 10000 + today_date->tm_mon * 100 + today_date->tm_mday;
 		if (yyymmdd_today_date > yyyymmdd_task_date && !(task.is_done()))
-			category_list[3].remove(&task);
+			category_list[OVERDUE].remove(&task);
 		else if (!(task.is_done()))
 		{
-			category_list[1].remove(&task);
+			category_list[PLANNED].remove(&task);
 			if (yyymmdd_today_date == yyyymmdd_task_date)
-				category_list[2].remove(&task);
+				category_list[TODAY].remove(&task);
 		}
 	}
 }
@@ -404,7 +363,7 @@ void TaskManager::remove_task(const int list_index, const int task_index)
 	if (!task.is_done())
 	{
 		if (task.is_important())
-			category_list[0].remove(&task);
+			category_list[IMPORTANT].remove(&task);
 		remove_task_from_date_categories(task);
 	}
 	base_list[list_index].remove(task_index);
@@ -421,7 +380,7 @@ void TaskManager::move_task(const std::string & t, int f_index, int t_index)
 			base_list[t_index].add(base_list[f_index][task_index]);
 			Task & new_task = base_list[t_index][base_list[t_index].get_num_elements() - 1];
 			if (new_task.is_important())
-				category_list[0].add(&new_task);
+				category_list[IMPORTANT].add(&new_task);
 			add_task_to_date_categories(new_task);
 			remove_task(f_index, task_index);
 		}
@@ -507,7 +466,7 @@ void TaskManager::get_command()
 			{
 				std::string task_title;
 				reed_title(task_title, false);
-				index = (contex == -1) ? 0 : contex;
+				index = (contex == -1) ? TASKS : contex;
 				while (char c = cin.peek() != '\n')
 					if (c != ' ')
 					{
@@ -541,16 +500,16 @@ void TaskManager::get_command()
 						reed_title(title, false);
 						std::transform(title.begin(), title.end(), title.begin(), ::tolower);
 						index = base_list[contex].find(title);
+						if (index != -1)
+						{
+							base_list[contex][index].add_subtask(sub_title);
+							show(contex, base_list);
+						}
+						else
+							cout << "There is not task with this title!\n";
 					}
 					else
 						cout << "You have to enter \"to\" and title of tasks you want to add subtaks to!\n";
-					if (index != -1)
-					{
-						base_list[contex][index].add_subtask(sub_title);
-						show(contex, base_list);
-					}
-					else
-						cout << "There is not task with this title!\n";
 				}
 				else
 				{
@@ -579,7 +538,7 @@ void TaskManager::get_command()
 			{
 				std::string task_title;
 				reed_title(task_title, false);
-				index = (contex == -1) ? 0 : contex;
+				index = (contex == -1) ? TASKS : contex;
 				while (char c = cin.peek() != '\n')
 					if (c != ' ')
 					{
@@ -698,26 +657,26 @@ void TaskManager::get_command()
 									}
 									new_task.set_date(new_task_date);
 									if (new_task.is_important())
-										category_list[0].add(&new_task);
+										category_list[IMPORTANT].add(&new_task);
 									add_task_to_date_categories(new_task);
 								}
 								if (task.is_important())
-									category_list[0].remove(&task);
+									category_list[IMPORTANT].remove(&task);
 								remove_task_from_date_categories(task);
 								task.change_done();
-								base_list[1].add(task);
+								base_list[COMPLETED].add(task);
 								base_list[contex].remove(task);
 								show(contex, base_list);
 							}
 							else
 							{
-								base_list[0].add(task);
+								base_list[TASKS].add(task);
 								Task & new_task = base_list[0][base_list[0].get_num_elements() - 1];
 								new_task.change_done();
 								if (new_task.is_important())
-									category_list[0].add(&new_task);
+									category_list[IMPORTANT].add(&new_task);
 								add_task_to_date_categories(new_task);
-								base_list[1].remove(task);
+								base_list[COMPLETED].remove(task);
 								show(contex, base_list);
 							}
 						}
@@ -821,7 +780,7 @@ void TaskManager::get_command()
 		{
 			std::string task_title;
 			reed_title(task_title, false);
-		 	int from_index = (contex == -1) ? 0 : contex;
+		 	int from_index = (contex == -1) ? TASKS : contex;
 			int to_index;
 			while (char c = cin.peek() != '\n')
 				if (c != ' ')

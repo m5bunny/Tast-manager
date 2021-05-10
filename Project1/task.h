@@ -4,8 +4,16 @@
 #include <ctime>
 #include <algorithm>
 #include "list.h"
+#include <sstream>
 
-class Task
+class iSave
+{
+public:
+	virtual void save(std::stringstream & sf) = 0;
+	virtual ~iSave() {}
+};
+
+class Task : public iSave
 {
 	std::string title;
 	std::tm date;
@@ -39,11 +47,14 @@ public:
 	void add_subtask(const List<std::string> & tasks);
 	bool remove_subtask(int index) { subtasks.remove(index); };
 	bool remove_subtask(const std::string & t);
+	void save(std::stringstream & sf);
 
 	friend std::ostream & operator<<(std::ostream & os, const Task & task);
 	friend bool operator==(const std::string & s, const Task & task) { return task.operator==(s); }
 	Task & operator=(const Task & task);
 	const std::string & operator[](const int index) const { return subtasks[index]; }
 };
+
+
 
 #endif // !TASK_H_

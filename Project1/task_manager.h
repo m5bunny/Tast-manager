@@ -5,6 +5,13 @@
 #include <algorithm>
 #include "task_list.h"
 
+#define IMPORTANT 0
+#define PLANNED 1
+#define TODAY 2
+#define OVERDUE 3
+#define TASKS 0
+#define COMPLETED 1
+
 class TaskManager 
 {
 	std::string data_file_title;
@@ -18,7 +25,7 @@ class TaskManager
 	bool reed_title(std::string & title, bool islist);
 	bool reed_command(std::string & command);
 	void add_task_to_date_categories(Task & task);
-	void remove_task_from_date_categories(Task& task);
+	void remove_task_from_date_categories(Task & task);
 	void show_home();
 	template<typename Item>
 	void show(int index, Item & list);

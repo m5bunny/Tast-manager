@@ -3,19 +3,19 @@
 #include "task.h"
 #include <algorithm>
 
-class TaskList : List<Task>
+class TaskList : List<Task>, public iSave
 {
 	std::string title;
 	bool isdefalut;
 public:
-	TaskList(const std::string t = "no_title", bool isd = false) : List() { title = t; isdefalut = isd; }
-	TaskList(const Task & task) : List(task) { title = "no_title"; isdefalut = false; }
-	TaskList(const std::string t, bool isd, const Task & task) : List(task) { title = t; isdefalut = isd; }
-	TaskList(const TaskList & list) : List(list) { title = list.title; isdefalut = list.isdefalut; }
+	TaskList(const std::string t = "no_title", bool isd = false);
+	TaskList(const Task & task);
+	TaskList(const std::string t, bool isd, const Task & task);
+	TaskList(const TaskList & list);
 	
 	const Task & operator[](const int index) const { return List::operator[](index); }
 	Task & operator[](const int index) { return List::operator[](index); }
-	TaskList & operator=(const TaskList & list) { List::operator=(list); title = list.title; isdefalut = list.isdefalut; return *this; }
+	TaskList & operator=(const TaskList & list);
 	bool operator==(const std::string & s) const { return (title == s); }
 	bool operator==(const TaskList & list) const { return (title == list.title); }
 
@@ -28,24 +28,25 @@ public:
 	const std::string & get_title() const { return title; };
 	void set_title(const std::string & t) { title = t; }
 	bool is_defalut() const { return isdefalut; }
+	void save(std::stringstream & sf);
 
 	friend bool operator==(const std::string & s, const TaskList & list) { return (list == s); }
-	friend std::ostream & operator<<(std::ostream & os, TaskList & list) {  os << list.get_title() << " (" << list.get_num_elements() << ")"; return os; }
+	friend std::ostream & operator<<(std::ostream & os, TaskList & list);
 };
 
 class TaskCategory : List<Task *>
 {
 	std::string title;
 public:
-	TaskCategory(const std::string & t = "no_title", bool isd = false) : List() { title = t; }
-	TaskCategory(Task * task) : List(task) { title = "no_title"; }
-	TaskCategory(const std::string & t, bool isd, Task* task) : List(task) { title = t; }
-	TaskCategory(const TaskCategory & list) : List(list) { title = list.title; }
+	TaskCategory(const std::string & t = "no_title", bool isd = false);
+	TaskCategory(Task * task);
+	TaskCategory(const std::string & t, bool isd, Task* task);
+	TaskCategory(const TaskCategory & list);
 
 	Task & operator[](const int index) { return *(List::operator[](index)); }
 	const Task & operator[](const int index) const { return *(List::operator[](index)); }
-	TaskCategory & operator=(const TaskCategory& list) { List::operator=(list); title = list.title; return *this; }
-	bool operator==(const std::string& s) const { std::string temp = title; std::transform(temp.begin(), temp.end(), temp.begin(), ::toupper);; return (temp == s); }
+	TaskCategory & operator=(const TaskCategory & list);
+	bool operator==(const std::string& s) const { return (title == s); }
 	bool operator==(const TaskCategory& list) const { return (title == list.title); }
 
 
@@ -58,6 +59,8 @@ public:
 	const std::string & get_title() const { return title; };
 	
 	friend bool operator==(const std::string & s, const TaskCategory & list) { return (list == s); }
-	friend std::ostream & operator<<(std::ostream & os, TaskCategory & list) {  os << list.get_title() << " (" << list.get_num_elements() << ")"; return os; }
+	friend std::ostream & operator<<(std::ostream & os, TaskCategory & list);
 };
+
+
 #endif

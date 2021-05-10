@@ -6,6 +6,5 @@ int main(void)
 {
 	TaskManager tm{ "data.txt" };
 	tm.get_command();
-
 	return 0;
 }
