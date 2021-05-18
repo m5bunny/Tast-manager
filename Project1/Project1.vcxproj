@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="exception.h" />
     <ClInclude Include="task_manager.h" />
     <ClInclude Include="task_list.h" />
     <ClInclude Include="list.h" />

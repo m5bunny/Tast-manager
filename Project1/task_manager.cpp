@@ -128,35 +128,29 @@ bool TaskManager::reed_title(std::string & title, bool islist)
 	using std::cin;
 	using std::endl;
 	title = "";
-	try
+	char read_char;
+	while ((read_char = cin.get()) != '\n')
+		if (read_char == '"')
+			break;
+	if (read_char == '\n')
 	{
-		char read_char;
-		while ((read_char = cin.get()) != '\n')
-			if (read_char == '"')
-				break;
-		if (read_char == '\n')
-		{
-			throw "You have to enter title of list/task (\"List/task title\")!";
-		}
-		while ((read_char = cin.get()) != '\n')
-		{
-			if (read_char == '"')
-				break;
-			title += read_char;
-		}
-		if (read_char == '\n')
-		{
-			throw "You have to enter title of list/task (\"List/task title\")!";
-		}
-		if (islist)
-			std::transform(title.begin(), title.end(), title.begin(), ::toupper);
-		return true;
+		cin.putback(read_char);
+		throw Exeption{ "You have to enter title of list/task (\"List/task title\")!" };
 	}
-	catch (const char * massange)
+	while ((read_char = cin.get()) != '\n')
 	{
-		cout << massange << endl;
-		return false;
+		if (read_char == '"')
+			break;
+		title += read_char;
 	}
+	if (read_char == '\n')
+	{
+		cin.putback(read_char);
+		throw Exeption{ "You have to enter title of list/task (\"List/task title\")!" };
+	}
+	if (islist)
+		std::transform(title.begin(), title.end(), title.begin(), ::toupper);
+	return true;
 }
 
 bool TaskManager::reed_command(std::string & command)
@@ -251,17 +245,9 @@ void TaskManager::show(int index, Item & list)
 
 void TaskManager::add_list(const std::string & t)
 {
-	try 
-	{
-		if (base_list.find(t) != -1)
-			throw "There is already a list with this title!\n";
-		base_list.add(TaskList{ t });
-	}
-	catch (const char * massange)
-	{
-		std::cout << massange;
-		return;
-	}
+	if (base_list.find(t) != -1)
+		throw Exeption{ "There is already a list with this title!" };
+	base_list.add(TaskList{ t });
 	show(contex, base_list);
 }
 
@@ -308,53 +294,37 @@ void TaskManager::add_task(const std::string & t, int i)
 		show(contex, base_list);
 	}
 	else
-	{
-		cout << "You can not add the task to the COMPLETED list!\n";
-	}
+		throw Exeption{ "You can not add the task to the COMPLETED list!" };
 }
 
 void TaskManager::rename_list(int index, const std::string & nt)
 {
-	try
-	{
-		if (index < 0 || index >= base_list.get_num_elements())
-			throw "You entered a wrong number!";
-		else if (base_list[index].is_defalut())
-			throw "You can not rename the default list!";
-		else if (base_list[index].get_title() == nt)
-			throw "The new and the old title are the same!";
-		base_list[index].set_title(nt);
-		show(contex, base_list);
-	}
-	catch (const char * massange)
-	{
-		std::cout << massange << std::endl;
-	}
+	if (index < 0 || index >= base_list.get_num_elements())
+		throw Exeption{ "You entered a wrong number!" };
+	else if (base_list[index].is_defalut())
+		throw Exeption{ "You can not rename the default list!" };
+	else if (base_list[index].get_title() == nt)
+		throw Exeption{ "The new and the old title are the same!" };
+	base_list[index].set_title(nt);
+	show(contex, base_list);
 }
 
 void TaskManager::remove_list(const int index)
 {
-	try
+	if (index < 0 || index >= base_list.get_num_elements())
+		throw Exeption{ "You entered a wrong number!" };
+	else if (base_list[index].is_defalut())
+		throw Exeption{ "You can not remove the default list!" };
+	int num_elements = base_list[index].get_num_elements();
+	if (num_elements > 0)
 	{
-		if (index < 0 || index >= base_list.get_num_elements())
-			throw "You entered a wrong number!";
-		else if (base_list[index].is_defalut())
-			throw "You can not remove the default list!";
-		int num_elements = base_list[index].get_num_elements();
-		if (num_elements > 0)
+		for (int i{}; i < num_elements; ++i)
 		{
-			for (int i{}; i < num_elements; ++i)
-			{
-				remove_task(index, i);
-			}
+			remove_task(index, i);
 		}
-		base_list.remove(index);
-		show(contex, base_list);
 	}
-	catch (const char * massange)
-	{
-		std::cout << massange << std::endl;
-	}
+	base_list.remove(index);
+	show(contex, base_list);
 }
 
 void TaskManager::remove_task(const int list_index, const int task_index)
@@ -385,12 +355,10 @@ void TaskManager::move_task(const std::string & t, int f_index, int t_index)
 			remove_task(f_index, task_index);
 		}
 		else
-			std::cout << "There is not task with this title in " << base_list[f_index].get_title() << "!" << std::endl;
+			throw Exeption{ "There is not task with this title in " + base_list[f_index].get_title() + "!" };
 	}
 	else
-	{
-		std::cout << "You can not move tasks from or to the COMPLETED list!\n";
-	}
+		throw Exeption{ "You can not move tasks from or to the COMPLETED list!" };
 }
 
 void TaskManager::help()
@@ -441,54 +409,34 @@ void TaskManager::get_command()
 	cout << "Enter command (\"Q\" to quite):";
 	while (reed_command(command) && command != "q")
 	{
-		std::transform(command.begin(), command.end(), command.begin(), ::tolower);
-		if (command == "show")
+		try
 		{
-			if (reed_title(title, true))
+			std::transform(command.begin(), command.end(), command.begin(), ::tolower);
+			if (command == "show")
 			{
-				if ((index = category_list.find(title)) != -1)
-					show(index, category_list);
-				else if ((index = base_list.find(title)) != -1)
-					show(index, base_list);
-				else
-					cout << "There is not list with this title!\n";
+				if (reed_title(title, true))
+				{
+					if ((index = category_list.find(title)) != -1)
+						show(index, category_list);
+					else if ((index = base_list.find(title)) != -1)
+						show(index, base_list);
+					else
+					  throw	Exeption{ "There is not list with this title!" };
+				}
 			}
-		}
-		else if (command == "add")
-		{
-			reed_command(command);
-			if (command == "list")
+			else if (command == "add")
 			{
-				reed_title(title, true);
-				add_list(title);
-			}
-			else if (command == "task")
-			{
-				std::string task_title;
-				reed_title(task_title, false);
-				index = (contex == -1) ? TASKS : contex;
-				while (char c = cin.peek() != '\n')
-					if (c != ' ')
-					{
-						reed_command(command);
-						break;
-					}
-				if (command == "to")
+				reed_command(command);
+				if (command == "list")
 				{
 					reed_title(title, true);
-					index = base_list.find(title);
+					add_list(title);
 				}
-				if (index != -1)
-					add_task(task_title, index);
-				else
-					cout << "There is not list with this title!\n";
-			}
-			else if (command == "subtask")
-			{
-				if (contex != -1)
+				else if (command == "task")
 				{
-					std::string sub_title;
-					reed_title(sub_title, false);
+					std::string task_title;
+					reed_title(task_title, false);
+					index = (contex == -1) ? TASKS : contex;
 					while (char c = cin.peek() != '\n')
 						if (c != ' ')
 						{
@@ -497,48 +445,287 @@ void TaskManager::get_command()
 						}
 					if (command == "to")
 					{
-						reed_title(title, false);
-						std::transform(title.begin(), title.end(), title.begin(), ::tolower);
-						index = base_list[contex].find(title);
-						if (index != -1)
+						reed_title(title, true);
+						index = base_list.find(title);
+					}
+					if (index != -1)
+						add_task(task_title, index);
+					else
+						throw Exeption{ "There is not list with this title!" };
+				}
+				else if (command == "subtask")
+				{
+					if (contex != -1)
+					{
+						std::string sub_title;
+						reed_title(sub_title, false);
+						while (char c = cin.peek() != '\n')
+							if (c != ' ')
+							{
+								reed_command(command);
+								break;
+							}
+						if (command == "to")
 						{
-							base_list[contex][index].add_subtask(sub_title);
-							show(contex, base_list);
+							reed_title(title, false);
+							std::transform(title.begin(), title.end(), title.begin(), ::tolower);
+							index = base_list[contex].find(title);
+							if (index != -1)
+							{
+								base_list[contex][index].add_subtask(sub_title);
+								show(contex, base_list);
+							}
+							else
+								throw Exeption{ "There is not task with this title!" };
 						}
 						else
-							cout << "There is not task with this title!\n";
+							throw Exeption{ "You have to enter 'to' and title of tasks you want to add subtaks to!" };
 					}
 					else
-						cout << "You have to enter \"to\" and title of tasks you want to add subtaks to!\n";
+						throw Exeption{ "You have to be in list to add the subtasks!" };
 				}
 				else
-				{
-					while (cin.get() != '\n');
-					cout << "You have to be in list to add the subtasks!\n";
-				}
-					
+					throw Exeption{ "You have to enter 'list' if you want to add the list, or 'taks' if you want to add the task!" };
 			}
-			else
+			else if (command == "remove")
 			{
-				cout << "You have to enter \"list\" if you want to add the list, or \"taks\" if you want to add the task!\n";
+				reed_command(command);
+				if (command == "list")
+				{
+					reed_title(title, true);
+					if ((index = base_list.find(title)) != -1)
+						remove_list(index);
+					else
+						throw Exeption{ "There is not list with this title!" };
+				}
+				else if (command == "task")
+				{
+					std::string task_title;
+					reed_title(task_title, false);
+					index = (contex == -1) ? TASKS : contex;
+					while (char c = cin.peek() != '\n')
+						if (c != ' ')
+						{
+							reed_command(command);
+							break;
+						}
+					if (command == "from")
+					{
+						reed_title(title, true);
+						index = base_list.find(title);
+					}
+					if (index != -1)
+					{
+						std::transform(task_title.begin(), task_title.end(), task_title.begin(), ::tolower);
+						int task_index = base_list[index].find(task_title);
+						if (task_index != -1)
+							remove_task(index, task_index);
+						else
+							throw Exeption{ "There is not task with this title in " + base_list[index].get_title() + "!" };
+					}
+					else
+						throw Exeption{ "There is not list with this title!" };
+				}
+				else if (command == "subtask")
+				{
+					if (contex != -1)
+					{
+						std::string sub_title;
+						reed_title(sub_title, false);
+						while (char c = cin.peek() != '\n')
+							if (c != ' ')
+							{
+								reed_command(command);
+								break;
+							}
+						if (command == "from")
+						{
+							reed_title(title, false);
+							std::transform(title.begin(), title.end(), title.begin(), ::tolower);
+							index = base_list[contex].find(title);
+						}
+						else
+							throw Exeption{ "You have to enter 'from' and title of tasks you want to remove subtaks from!" };
+						if (index != -1)
+						{
+							if (base_list[contex][index].remove_subtask(sub_title))
+								show(contex, base_list);
+						}
+						else
+							throw Exeption{ "There is not task with this title!" };
+					}
+					else
+						throw Exeption{ "You have to be in list to remove the subtasks!" };
+				}
+				else
+					throw Exeption{ "You have to enter 'list' if you want to remove the list, or 'taks' if you want to remove the task!" };
 			}
-		}
-		else if (command == "remove")
-		{
-			reed_command(command);
-			if (command == "list")
+			else if (command == "rename")
 			{
 				reed_title(title, true);
 				if ((index = base_list.find(title)) != -1)
-					remove_list(index);
+				{
+					if (reed_title(title, true))
+						rename_list(index, title);
+				}
 				else
-					cout << "There is not list with this title!\n";
+					throw Exeption{ "There is not list with this title!" };
 			}
-			else if (command == "task")
+			else if (command == "change")
+			{
+				if (contex != -1)
+				{
+					if (reed_title(title, false))
+					{
+						index = base_list[contex].find(title);
+						if (index != -1)
+						{
+							Task& task = base_list[contex][index];
+							reed_command(command);
+							if (command == "important")
+							{
+								if (task.is_important() && !task.is_done())
+								{
+									category_list[0].remove(&task);
+								}
+								else
+								{
+									category_list[0].add(&task);
+								}
+								task.change_imporant();
+								show(contex, base_list);
+							}
+							else if (command == "complete")
+							{
+								if (!task.is_done())
+								{
+									if (task.is_routine())
+									{
+										base_list[contex].add(task);
+										Task& new_task = base_list[contex][base_list[contex].get_num_elements() - 1];
+										std::tm new_task_date = new_task.get_date();
+										if (new_task_date.tm_mon + 1 <= 12)
+											++new_task_date.tm_mon;
+										else
+										{
+											++new_task_date.tm_year;
+											new_task_date.tm_mon = 1;
+										}
+										new_task.set_date(new_task_date);
+										if (new_task.is_important())
+											category_list[IMPORTANT].add(&new_task);
+										add_task_to_date_categories(new_task);
+									}
+									if (task.is_important())
+										category_list[IMPORTANT].remove(&task);
+									remove_task_from_date_categories(task);
+									task.change_done();
+									base_list[COMPLETED].add(task);
+									base_list[contex].remove(task);
+									show(contex, base_list);
+								}
+								else
+								{
+									base_list[TASKS].add(task);
+									Task& new_task = base_list[0][base_list[0].get_num_elements() - 1];
+									new_task.change_done();
+									if (new_task.is_important())
+										category_list[IMPORTANT].add(&new_task);
+									add_task_to_date_categories(new_task);
+									base_list[COMPLETED].remove(task);
+									show(contex, base_list);
+								}
+							}
+							else if (command == "routine")
+							{
+								if (task.get_date().tm_year != 0)
+								{
+									task.change_routine();
+									show(contex, base_list);
+								}
+								else
+									throw Exeption{ "You can not set routine to task without date!" };
+							}
+							else if (command == "title")
+							{
+								if (reed_title(title, false))
+								{
+									task.set_title(title);
+									show(contex, base_list);
+								}
+							}
+							else if (command == "date")
+							{
+								char c;
+								int year, month, day;
+								while ((c = cin.peek()) != '\n')
+								{
+									if (c != ' ')
+									{
+										reed_command(command);
+										break;
+									}
+									else
+										cin.get();
+								}
+								if (command == "off")
+								{
+									if (task.get_date().tm_year != 0)
+									{
+										remove_task_from_date_categories(task);
+										std::tm date;
+										date.tm_year = 0;
+										date.tm_mon = 0;
+										date.tm_mday = 0;
+										task.set_date(date);
+										if (task.is_routine())
+											task.change_routine();
+										show(contex, base_list);
+									}
+									else
+										throw Exeption{ "This task is already without date!" };
+								}
+								else
+								{
+									cout << "Enter the date in format yyyy/mm/dd:";
+									if (cin >> year)
+									{
+										cin.get();
+										cin >> month;
+										cin.get();
+										cin >> day;
+										while (cin.get() != '\n');
+										std::tm date;
+										date.tm_year = year;
+										date.tm_mon = month;
+										date.tm_mday = day;
+										task.set_date(date);
+										add_task_to_date_categories(task);
+										show(contex, base_list);
+									}
+									else
+									{
+										cin.clear();
+										throw Exeption{ "You have to enter date like YYYY/MM/DD!" };
+									}
+								}
+							}
+							else
+								throw Exeption{ "You can change date, important, complete, title and routine!" };
+						}
+						else
+							throw Exeption{ "There is not task with this title!" };
+					}
+				}
+				else
+					throw Exeption{ "You have to be in list to change the task!" };
+			}
+			else if (command == "move")
 			{
 				std::string task_title;
 				reed_title(task_title, false);
-				index = (contex == -1) ? TASKS : contex;
+				int from_index = (contex == -1) ? TASKS : contex;
+				int to_index;
 				while (char c = cin.peek() != '\n')
 					if (c != ' ')
 					{
@@ -548,252 +735,27 @@ void TaskManager::get_command()
 				if (command == "from")
 				{
 					reed_title(title, true);
-					index = base_list.find(title);
-				}
-				if (index != -1)
-				{
-					std::transform(task_title.begin(), task_title.end(), task_title.begin(), ::tolower);
-					int task_index = base_list[index].find(task_title);
-					if (task_index != -1)
-						remove_task(index, task_index);
-					else
-						cout << "There is not task with this title in " << base_list[index].get_title() << "!" << endl;
-				}
-				else
-					cout << "There is not list with this title!\n";
-			}
-			else if (command == "subtask")
-			{
-				if (contex != -1)
-				{
-					std::string sub_title;
-					reed_title(sub_title, false);
-					while (char c = cin.peek() != '\n')
-						if (c != ' ')
-						{
-							reed_command(command);
-							break;
-						}
-					if (command == "from")
+					from_index = base_list.find(title);
+					reed_command(command);
+					if (command == "to")
 					{
-						reed_title(title, false);
-						std::transform(title.begin(), title.end(), title.begin(), ::tolower);
-						index = base_list[contex].find(title);
-					}
-					else
-						cout << "You have to enter \"from\" and title of tasks you want to remove subtaks from!\n";
-					if (index != -1)
-					{
-						if (base_list[contex][index].remove_subtask(sub_title))
-							show(contex, base_list);
-					}
-					else
-						cout << "There is not task with this title!\n";
-				}
-				else
-				{
-					while (cin.get() != '\n');
-					cout << "You have to be in list to remove the subtasks!\n";
-				}
-			}
-			else
-			{
-				cout << "You have to enter \"list\" if you want to remove the list, or \"taks\" if you want to remove the task!\n";
-			}
-		}
-		else if (command == "rename")
-		{
-			reed_title(title, true);
-			if ((index = base_list.find(title)) != -1)
-			{
-				if (reed_title(title, true))
-					rename_list(index, title);
-			}
-			else
-			{
-				while (cin.get() != '\n');
-				cout << "There is not list with this title!\n";
-			}
-		}
-		else if (command == "change")
-		{	
-			if (contex != -1)
-			{
-				if (reed_title(title, false))
-				{
-					index = base_list[contex].find(title);
-					if (index != -1)
-					{
-						Task & task = base_list[contex][index];
-						reed_command(command);
-						if (command == "important")
+						reed_title(title, true);
+						to_index = base_list.find(title);
+						if (from_index != to_index)
 						{
-							if (task.is_important() && !task.is_done())
-							{
-								category_list[0].remove(&task);
-							}
+							std::transform(task_title.begin(), task_title.end(), task_title.begin(), ::tolower);
+							if (from_index != -1 && to_index != -1)
+								move_task(task_title, from_index, to_index);
 							else
-							{
-								category_list[0].add(&task);
-							}
-							task.change_imporant();
-							show(contex, base_list);
-						}
-						else if (command == "complete")
-						{
-							if (!task.is_done())
-							{
-								if (task.is_routine())
-								{
-									base_list[contex].add(task);
-									Task & new_task = base_list[contex][base_list[contex].get_num_elements() - 1];
-									std::tm new_task_date = new_task.get_date();
-									if (new_task_date.tm_mon + 1 <= 12)
-										++new_task_date.tm_mon;
-									else
-									{
-										++new_task_date.tm_year;
-										new_task_date.tm_mon = 1;
-									}
-									new_task.set_date(new_task_date);
-									if (new_task.is_important())
-										category_list[IMPORTANT].add(&new_task);
-									add_task_to_date_categories(new_task);
-								}
-								if (task.is_important())
-									category_list[IMPORTANT].remove(&task);
-								remove_task_from_date_categories(task);
-								task.change_done();
-								base_list[COMPLETED].add(task);
-								base_list[contex].remove(task);
-								show(contex, base_list);
-							}
-							else
-							{
-								base_list[TASKS].add(task);
-								Task & new_task = base_list[0][base_list[0].get_num_elements() - 1];
-								new_task.change_done();
-								if (new_task.is_important())
-									category_list[IMPORTANT].add(&new_task);
-								add_task_to_date_categories(new_task);
-								base_list[COMPLETED].remove(task);
-								show(contex, base_list);
-							}
-						}
-						else if (command == "routine")
-						{
-							if (task.get_date().tm_year != 0)
-							{
-								task.change_routine();
-								show(contex, base_list);
-							}
-							else
-								cout << "You can not set routine to task without date!\n";
-						}
-						else if (command == "title")
-						{
-							if (reed_title(title, false))
-							{
-								task.set_title(title);
-								show(contex, base_list);
-							}
-						}
-						else if (command == "date")
-						{
-							char c;
-							int year, month, day;
-							while ((c = cin.peek()) != '\n')
-							{
-								if (c != ' ')
-								{
-									reed_command(command);
-									break;
-								}
-								else 
-									cin.get();
-							}
-							if (command == "off")
-							{
-								if (task.get_date().tm_year != 0)
-								{
-									remove_task_from_date_categories(task);
-									std::tm date;
-									date.tm_year = 0;
-									date.tm_mon = 0;
-									date.tm_mday = 0;
-									task.set_date(date);
-									if (task.is_routine())
-										task.change_routine();
-									show(contex, base_list);
-								}
-								else
-									cout << "This task is already without date!\n";
-							}
-							else
-							{
-								cout << "Enter the date in format yyyy/mm/dd:";
-								if (cin >> year)
-								{
-									cin.get();
-									cin >> month;
-									cin.get();
-									cin >> day;
-									while (cin.get() != '\n');
-									std::tm date;
-									date.tm_year = year;
-									date.tm_mon = month;
-									date.tm_mday = day;
-									task.set_date(date);
-									add_task_to_date_categories(task);
-									show(contex, base_list);
-								}
-								else
-								{
-									cout << "You have to enter date like YYYY/MM/DD!\n";
-									cin.clear();
-									cin.ignore(256, '\n');
-								}
-							}
+								throw Exeption{ "There is not list with this title!" };
 						}
 						else
-						{
-							while (cin.get() != '\n');
-							cout << "You can change date, important, complete, title and routine!\n";
-						}
+							throw Exeption{ "The from list and the to list are the same!" };
 					}
 					else
-					{
-						while (cin.get() != '\n');
-						cout << "There is not task with this title!\n";
-					}
-						
+						throw Exeption{ "You have to enter 'to' and the title of the list to move the task!" };
 				}
-			}
-			else
-			{
-				while (cin.get() != '\n');
-				cout << "You have to be in list to change the task!\n";
-			}
-
-		}
-		else if (command == "move")
-		{
-			std::string task_title;
-			reed_title(task_title, false);
-		 	int from_index = (contex == -1) ? TASKS : contex;
-			int to_index;
-			while (char c = cin.peek() != '\n')
-				if (c != ' ')
-				{
-					reed_command(command);
-					break;
-				}
-			if (command == "from")
-			{
-				reed_title(title, true);
-				from_index = base_list.find(title);
-				reed_command(command);
-				if (command == "to")
+				else if (command == "to")
 				{
 					reed_title(title, true);
 					to_index = base_list.find(title);
@@ -803,47 +765,28 @@ void TaskManager::get_command()
 						if (from_index != -1 && to_index != -1)
 							move_task(task_title, from_index, to_index);
 						else
-							cout << "There is not list with this title!\n";
+							throw Exeption{ "There is not list with this title!" };
 					}
 					else
-						cout << "The from list and the to list are the same!\n";
+						throw Exeption{ "The from list and the to list are the same!" };
 				}
 				else
-					cout << "You have to enter \"to\" and the title of the list to move the task!\n";
+					throw Exeption{ "You have to enter 'to' and the title of the list to move the task!" };
 			}
-			else if (command == "to")
+			else if (command == "help")
 			{
-				reed_title(title, true);
-				to_index = base_list.find(title);
-				if (from_index != to_index)
-				{
-					std::transform(task_title.begin(), task_title.end(), task_title.begin(), ::tolower);
-					if (from_index != -1 && to_index != -1)
-						move_task(task_title, from_index, to_index);
-					else
-						cout << "There is not list with this title!\n";
-				}
-				else
-					cout << "The from list and the to list are the same!\n";
+				help();
+			}
+			else if (command == "back")
+			{
+				show_home();
 			}
 			else
-			{
-				while (cin.get() != '\n');
-				cout << "You have to enter \"to\" and the title of the list to move the task!\n";
-			}
+				throw Exeption{ "There is no such command, enter 'help' to see the list of commands!" };
 		}
-		else if (command == "help")
+		catch (Exeption & e)
 		{
-			help();
-		}
-		else if (command == "back")
-		{
-			show_home();
-		}
-		else
-		{
-			while (cin.get() != '\n');
-			cout << "There is no such command, enter \"help\" to see the list of commands!\n";
+			e.what();
 		}
 		cout << ":";
 	}

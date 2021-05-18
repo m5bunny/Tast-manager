@@ -1,6 +1,14 @@
 LTASKS
-t;
-;
+t:
+new task
+fftf;;
 LCOMPLETED
-t;
-;
+t:
+new task
+tttt2021 5 18;;
+LNEW LSIT
+f:
+new task
+ffff;,
+d
+ffff;;

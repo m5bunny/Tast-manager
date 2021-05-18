@@ -4,6 +4,7 @@
 #include <fstream>
 #include <algorithm>
 #include "task_list.h"
+#include "exception.h"
 
 #define IMPORTANT 0
 #define PLANNED 1
